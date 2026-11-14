@@ -1,0 +1,30 @@
+# Every key is optional; omitted keys fall back to the defaults in src/k8sforecast/config.py
+data:
+  step_seconds: 300            # 5-minute resolution
+  prometheus_url: http://prometheus.monitoring.svc:9090
+  namespace: java-backend-prod
+  workload: java-backend       # pods are matched as "<workload>-.*"
+  lookback_days: 28
+  include_rps: true            # Spring Boot / Micrometer request rate as an extra signal
+
+model:
+  horizons: [1, 3, 6, 12]      # in steps: 5, 15, 30, 60 minutes ahead
+  quantiles: [0.5, 0.9]        # p50 = expected, p90 = safe capacity bound
+  max_iter: 300
+  test_fraction: 0.2
+
+scaling:
+  pod_cpu_request: 0.5         # cores, must match your Deployment requests
+  pod_mem_request_gib: 1.0
+  target_cpu_util: 0.7         # same target as the HPA
+  target_mem_util: 0.8
+  min_pods: 2
+  max_pods: 50
+  node_cpu_alloc: 7.5          # allocatable cores on one node (e.g. 8 vCPU minus system reserved)
+  node_mem_alloc_gib: 28.0
+  node_headroom: 0.15
+  min_nodes: 2
+  max_nodes: 30
+  lead_time_steps: 6           # how long new nodes take to become ready (30 min)
+  scale_down_cooldown_steps: 12
+  max_scale_down_fraction: 0.25
